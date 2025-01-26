@@ -7,12 +7,13 @@ var jump_counter
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var jump_sound: AudioStreamPlayer2D = $JumpSound
 
-func _physics_process(delta: float) -> void:
+func jump_handler(delta: float) -> void:
+	# Reset jump
 	if is_on_floor():
 		jump_counter = 0
 	
 	# Add the gravity.
-	if not is_on_floor():
+	if not is_on_floor() :
 		velocity += get_gravity() * delta
 
 	# Handle jump.
@@ -21,6 +22,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y = JUMP_VELOCITY
 		jump_sound.play()
 
+func left_right_handler(delta: float) -> void:
 	# Get input direction: -1, 0, 1
 	var direction := Input.get_axis("move_left", "move_right")
 	
@@ -46,3 +48,11 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 
 	move_and_slide()
+
+func _input(event: InputEvent):
+	if (event.is_action_pressed("move_down") && is_on_floor()):
+		position.y += 1
+
+func _physics_process(delta: float) -> void:
+	jump_handler(delta)
+	left_right_handler(delta)
