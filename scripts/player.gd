@@ -33,8 +33,6 @@ func left_right_handler():
 		velocity.x = direction * SPEED
 	else:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
-		
-	move_and_slide()
 
 func jump_handler():
 	# Handle jump.
@@ -48,13 +46,11 @@ func jump_handler():
 		
 		# Apply movement
 		velocity.y = JUMP_VELOCITY
-		move_and_slide()
 
 func down_handler():
 	if Input.is_action_pressed("move_down") && is_on_floor():
 		# Move one pixel down (assuming platform collision boxes are all 1px thick)
 		position.y += 1
-		move_and_slide()
 
 func _physics_process(delta: float) -> void:
 	# ALWAYS: add gravity
@@ -71,3 +67,5 @@ func _physics_process(delta: float) -> void:
 	jump_handler()
 	left_right_handler()
 	down_handler()
+	
+	move_and_slide()
