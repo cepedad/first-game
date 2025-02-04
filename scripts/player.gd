@@ -2,8 +2,12 @@ extends CharacterBody2D
 
 ### CONSTANTS
 # Horizontal Movement
-const SPEED = 130.0
-const DEC_FACTOR =  0.2
+const GROUND_SPEED = 130.0
+const AIR_SPEED = 130.0
+const GROUND_ACC_FACTOR =  1.0
+const GROUND_DEC_FACTOR =  0.2
+const MIDAIR_ACC_FACTOR = 0.45
+const MIDAIR_DEC_FACTOR = 0.2
 # Jumping
 const JUMP_VELOCITY = -300.0
 const MAX_JUMPS = 2
@@ -13,6 +17,7 @@ const COYOTE_TIME_FRAMES = 5
 # Rolling
 const ROLL_SPEED = 200
 const ROLL_DURATION = 0.5
+const AIRDODGE_DURATION = 0.3
 
 ### Helper Flags
 # Horizontal Movement
@@ -39,9 +44,15 @@ func left_right_handler():
 	# Apply movement
 	if not roll.is_rolling():
 		if input_direction:
-			velocity.x = input_direction * SPEED
+			if is_on_floor():
+				velocity.x = input_direction * GROUND_SPEED
+			else:
+				velocity.x = lerp(velocity.x, input_direction * AIR_SPEED, MIDAIR_ACC_FACTOR)
 		else:
-			velocity.x = lerp(velocity.x, 0.0, DEC_FACTOR)
+			if is_on_floor():
+				velocity.x = lerp(velocity.x, 0.0, GROUND_DEC_FACTOR)
+			else:
+				velocity.x = lerp(velocity.x, 0.0, MIDAIR_DEC_FACTOR)
 
 func down_handler():
 	if Input.is_action_pressed("move_down") && is_on_floor():
@@ -65,7 +76,7 @@ func jump_handler():
 			velocity.y *= SHORT_HOP_VELOCITY_FACTOR
 
 func roll_handler():
-	if Input.is_action_just_pressed("roll") and not roll.is_rolling():
+	if Input.is_action_just_pressed("roll") and is_on_floor() and not roll.is_rolling():
 		roll.start_roll(ROLL_DURATION)
 		velocity.x = saved_direction * ROLL_SPEED
 		
@@ -84,7 +95,7 @@ func play_animations():
 		elif saved_direction < 0:
 			sprite.flip_h = true
 		if is_on_floor():
-			if velocity.x < SPEED:
+			if velocity.x > -1 * GROUND_SPEED and velocity.x < GROUND_SPEED:
 				sprite.play("idle")
 			else:
 				sprite.play("run")
@@ -103,7 +114,6 @@ func _physics_process(delta: float) -> void:
 		frames_since_on_floor += 1
 	if frames_since_on_floor == (COYOTE_TIME_FRAMES + 1) and not is_on_floor():
 		jumps_remaining -= 1
-	
 
 	# Manipulate velocity from possible moving actions (walk, jump, roll, drop down)
 	left_right_handler()
