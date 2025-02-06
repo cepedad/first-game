@@ -4,20 +4,21 @@ extends CharacterBody2D
 # Horizontal Movement
 const GROUND_SPEED = 130.0
 const AIR_SPEED = 130.0
-const GROUND_ACC_FACTOR =  1.0
-const GROUND_DEC_FACTOR =  0.2
-const MIDAIR_ACC_FACTOR = 0.45
-const MIDAIR_DEC_FACTOR = 0.2
+const GROUND_DEC_FACTOR = 0.20
+const MIDAIR_ACC_FACTOR = 0.15
+const MIDAIR_DEC_FACTOR = 0.20
 # Jumping
 const JUMP_VELOCITY = -300.0
 const MAX_JUMPS = 2
 const SHORT_HOP_WINDOW = 5
-const SHORT_HOP_VELOCITY_FACTOR = 2.0/3.0
+const SHORT_HOP_FACTOR = 0.67
 const COYOTE_TIME_FRAMES = 5
 # Rolling
 const ROLL_SPEED = 200
 const ROLL_DURATION = 0.5
-const AIRDODGE_DURATION = 0.3
+const AIRDODGE_DURATION = 0.15
+const AIRDODGE_HANG_DURATION = 0.20
+const AIRDODGE_SPEED = 200
 
 ### Helper Flags
 # Horizontal Movement
@@ -32,6 +33,7 @@ var is_rolling = false
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var jump_sound: AudioStreamPlayer2D = $JumpSound
 @onready var roll: Node2D = $Roll
+@onready var airdodge: Node2D = $Airdodge
 
 func left_right_handler():
 	# Get input direction: -1, 0, 1
@@ -42,7 +44,7 @@ func left_right_handler():
 		saved_direction = input_direction
 		
 	# Apply movement
-	if not roll.is_rolling():
+	if not roll.is_rolling() and not airdodge.is_airdodging():
 		if input_direction:
 			if is_on_floor():
 				velocity.x = input_direction * GROUND_SPEED
@@ -73,7 +75,7 @@ func jump_handler():
 		
 	if Input.is_action_just_released("jump"):
 		if frames_since_on_floor <= SHORT_HOP_WINDOW:
-			velocity.y *= SHORT_HOP_VELOCITY_FACTOR
+			velocity.y *= SHORT_HOP_FACTOR
 
 func roll_handler():
 	if Input.is_action_just_pressed("roll") and is_on_floor() and not roll.is_rolling():
@@ -84,10 +86,29 @@ func roll_handler():
 		set_collision_layer_value(2, false)
 	else:
 		set_collision_layer_value(2, true)
+		
+func airdodge_handler():
+	var h_input_direction = Input.get_axis("move_left", "move_right")
+	var v_input_direction = Input.get_axis("move_up", "move_down")
+	
+	if Input.is_action_just_pressed("roll") and not is_on_floor() and not airdodge.is_airdodging():
+		airdodge.start_airdodge(AIRDODGE_DURATION, AIRDODGE_HANG_DURATION)
+	if airdodge.is_airdodging():
+		if h_input_direction != 0 and v_input_direction != 0:
+			velocity.x = h_input_direction * AIRDODGE_SPEED / sqrt(2)
+			velocity.y = v_input_direction * AIRDODGE_SPEED / sqrt(2)
+		else:
+			velocity.x = h_input_direction * AIRDODGE_SPEED
+			velocity.y = v_input_direction * AIRDODGE_SPEED
+	if airdodge.is_hanging() and not is_on_floor():
+		velocity.x = 0
+		velocity.y = 0
 
 func play_animations():
 	if roll.is_rolling():
 		sprite.play("roll")
+	elif airdodge.is_airdodging() or airdodge.is_hanging():
+		pass
 	else:
 		# Flip sprite
 		if saved_direction > 0:
@@ -104,7 +125,8 @@ func play_animations():
 
 func _physics_process(delta: float) -> void:
 	# ALWAYS: add gravity
-	velocity += get_gravity() * delta
+	if not airdodge.is_airdodging() and not airdodge.is_hanging():
+		velocity += get_gravity() * delta
 	
 	# ALWAYS: check how many jumps left
 	if is_on_floor():
@@ -120,6 +142,7 @@ func _physics_process(delta: float) -> void:
 	jump_handler()
 	down_handler()
 	roll_handler()
+	airdodge_handler()
 	
 	# Play animations
 	play_animations()

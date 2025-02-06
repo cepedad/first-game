@@ -1,9 +1,10 @@
-[gd_scene load_steps=36 format=3 uid="uid://b4lhmlurvkv40"]
+[gd_scene load_steps=37 format=3 uid="uid://b4lhmlurvkv40"]
 
 [ext_resource type="Texture2D" uid="uid://bwk0060psktjx" path="res://assets/sprites/knight.png" id="1_e5w7a"]
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_fkn8c"]
 [ext_resource type="AudioStream" uid="uid://bulfnx6d5fgpg" path="res://assets/sounds/jump.wav" id="3_304bq"]
 [ext_resource type="PackedScene" uid="uid://buheouil2gkux" path="res://scenes/roll.tscn" id="4_487et"]
+[ext_resource type="PackedScene" uid="uid://balg2bpqmkhbl" path="res://scenes/airdodge.tscn" id="5_2mmm0"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ej3ov"]
 atlas = ExtResource("1_e5w7a")
@@ -256,3 +257,5 @@ stream = ExtResource("3_304bq")
 bus = &"SFX"
 
 [node name="Roll" parent="." instance=ExtResource("4_487et")]
+
+[node name="Airdodge" parent="." instance=ExtResource("5_2mmm0")]
