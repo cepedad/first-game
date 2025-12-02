@@ -1,8 +1,13 @@
-[gd_scene load_steps=27 format=3 uid="uid://b4lhmlurvkv40"]
+[gd_scene load_steps=32 format=3 uid="uid://b4lhmlurvkv40"]
 
 [ext_resource type="Texture2D" uid="uid://bwk0060psktjx" path="res://assets/sprites/knight.png" id="1_e5w7a"]
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_fkn8c"]
 [ext_resource type="AudioStream" uid="uid://bulfnx6d5fgpg" path="res://assets/sounds/jump.wav" id="3_304bq"]
+[ext_resource type="Script" path="res://scripts/state_machine.gd" id="4_72trc"]
+[ext_resource type="Script" path="res://scripts/states/player_states/idle.gd" id="5_xm6hq"]
+[ext_resource type="Script" path="res://scripts/states/player_states/running.gd" id="6_xxc8o"]
+[ext_resource type="Script" path="res://scripts/states/player_states/jumping.gd" id="7_prns4"]
+[ext_resource type="Script" path="res://scripts/states/player_states/falling.gd" id="8_wusm5"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ej3ov"]
 atlas = ExtResource("1_e5w7a")
@@ -190,3 +195,18 @@ shape = SubResource("CircleShape2D_bdjrq")
 [node name="JumpSound" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("3_304bq")
 bus = &"SFX"
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("4_72trc")
+
+[node name="Idle" type="Node" parent="StateMachine"]
+script = ExtResource("5_xm6hq")
+
+[node name="Running" type="Node" parent="StateMachine"]
+script = ExtResource("6_xxc8o")
+
+[node name="Jumping" type="Node" parent="StateMachine"]
+script = ExtResource("7_prns4")
+
+[node name="Falling" type="Node" parent="StateMachine"]
+script = ExtResource("8_wusm5")
